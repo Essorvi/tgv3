@@ -262,14 +262,17 @@ async def check_subscription(user_id: int) -> bool:
         logging.error(f"Subscription check error: {e}")
         return False
 
-async def send_telegram_message(chat_id: int, text: str, parse_mode: str = "Markdown", reply_markup: dict = None) -> bool:
+async def send_telegram_message(chat_id: int, text: str, parse_mode: str = None, reply_markup: dict = None) -> bool:
     """Send message to Telegram user with optional keyboard"""
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
         "chat_id": chat_id,
-        "text": text,
-        "parse_mode": parse_mode
+        "text": text
     }
+    
+    # Only add parse_mode if it's explicitly set
+    if parse_mode:
+        payload["parse_mode"] = parse_mode
     
     if reply_markup:
         payload["reply_markup"] = reply_markup
