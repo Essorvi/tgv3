@@ -405,9 +405,68 @@ async def telegram_webhook(secret: str, request: Request):
         logging.error(f"Webhook processing failed: {e}")
         raise HTTPException(status_code=500, detail=f"Webhook processing failed: {str(e)}")
 
+async def handle_callback_query(callback_query: Dict[str, Any]):
+    """Handle callback queries from inline keyboard buttons"""
+    chat_id = callback_query.get('message', {}).get('chat', {}).get('id')
+    user_id = callback_query.get('from', {}).get('id')
+    data = callback_query.get('data')
+    
+    if not chat_id or not user_id or not data:
+        logging.error("Missing required callback data")
+        return
+    
+    if data == "check_subscription":
+        # Get user
+        user = await get_or_create_user(
+            telegram_id=user_id,
+            username=callback_query.get('from', {}).get('username'),
+            first_name=callback_query.get('from', {}).get('first_name'),
+            last_name=callback_query.get('from', {}).get('last_name')
+        )
+        
+        # Check subscription
+        is_subscribed = await check_subscription(user_id)
+        if is_subscribed:
+            # Update user subscription status
+            await db.users.update_one(
+                {"telegram_id": user_id},
+                {"$set": {"is_subscribed": True}}
+            )
+            
+            await send_telegram_message(
+                chat_id,
+                "✅ *Подписка подтверждена!*\n\n"
+                "🎉 Теперь вы можете пользоваться всеми функциями бота!\n"
+                "💡 Отправьте любой запрос для поиска или используйте команду /help"
+            )
+        else:
+            keyboard = {
+                "inline_keyboard": [
+                    [
+                        {"text": "📢 Подписаться на канал", "url": "https://t.me/uzri_sebya"}
+                    ],
+                    [
+                        {"text": "✅ Проверить подписку", "callback_data": "check_subscription"}
+                    ]
+                ]
+            }
+            
+            await send_telegram_message(
+                chat_id,
+                "❌ *Подписка не найдена*\n\n"
+                "📢 Подпишитесь на канал @uzri_sebya и нажмите 'Проверить подписку' снова",
+                reply_markup=keyboard
+            )
+
 async def handle_telegram_update(update_data: Dict[str, Any]):
     """Process incoming Telegram update"""
     logging.info(f"Received telegram update: {update_data}")
+    
+    # Handle callback queries (button presses)
+    callback_query = update_data.get('callback_query')
+    if callback_query:
+        await handle_callback_query(callback_query)
+        return
     
     message = update_data.get('message')
     if not message:
