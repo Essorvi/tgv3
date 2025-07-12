@@ -646,12 +646,12 @@ async def handle_search_command(chat_id: int, text: str, user: User):
     if not query:
         await send_telegram_message(
             chat_id,
-            "❌ *Ошибка:* Укажите запрос для поиска\n\n"
-            "*Примеры:*\n"
-            "📱 `+79123456789` - поиск по телефону\n"
-            "📧 `ivan@mail.ru` - поиск по email\n"
-            "👤 `Иван Петров` - поиск по имени\n\n"
-            "💡 Или используйте `/capabilities` для полного списка"
+            "❌ Ошибка: Укажите запрос для поиска\n\n"
+            "Примеры:\n"
+            "📱 +79123456789 - поиск по телефону\n"
+            "📧 ivan@mail.ru - поиск по email\n"
+            "👤 Иван Петров - поиск по имени\n\n"
+            "💡 Или используйте /capabilities для полного списка"
         )
         return
 
@@ -672,7 +672,7 @@ async def handle_search_command(chat_id: int, text: str, user: User):
             
             await send_telegram_message(
                 chat_id,
-                "🔒 *Для использования поиска необходимо подписаться на канал!*\n\n"
+                "🔒 Для использования поиска необходимо подписаться на канал!\n\n"
                 "📢 Подпишитесь на @uzri_sebya и нажмите 'Проверить подписку'",
                 reply_markup=keyboard
             )
@@ -706,8 +706,8 @@ async def handle_search_command(chat_id: int, text: str, user: User):
     search_emoji = type_emojis.get(search_type, "🔍")
     await send_telegram_message(
         chat_id, 
-        f"{search_emoji} *Выполняю поиск...* \n"
-        f"🔍 *Тип:* {search_type}\n"
+        f"{search_emoji} Выполняю поиск...\n"
+        f"🔍 Тип: {search_type}\n"
         f"⏱️ Подождите немного..."
     )
 
@@ -751,7 +751,7 @@ async def handle_search_command(chat_id: int, text: str, user: User):
             if user.attempts_remaining > 0:
                 await send_telegram_message(
                     chat_id,
-                    f"💎 *Осталось попыток:* {user.attempts_remaining}"
+                    f"💎 Осталось попыток: {user.attempts_remaining}"
                 )
             else:
                 await send_telegram_message(
@@ -765,14 +765,14 @@ async def handle_search_command(chat_id: int, text: str, user: User):
         logging.error(f"Usersbox API error: {e}")
         await send_telegram_message(
             chat_id,
-            "❌ *Ошибка при выполнении поиска*\n\n"
+            "❌ Ошибка при выполнении поиска\n\n"
             "Сервис временно недоступен. Попробуйте позже."
         )
     except Exception as e:
         logging.error(f"Search error: {e}")
         await send_telegram_message(
             chat_id,
-            "❌ *Произошла ошибка при поиске*\n\n"
+            "❌ Произошла ошибка при поиске\n\n"
             "Попробуйте еще раз или обратитесь к администратору."
         )
 
