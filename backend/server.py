@@ -410,10 +410,18 @@ async def handle_callback_query(callback_query: Dict[str, Any]):
     chat_id = callback_query.get('message', {}).get('chat', {}).get('id')
     user_id = callback_query.get('from', {}).get('id')
     data = callback_query.get('data')
+    callback_query_id = callback_query.get('id')
     
     if not chat_id or not user_id or not data:
         logging.error("Missing required callback data")
         return
+    
+    # Answer callback query to remove loading
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/answerCallbackQuery"
+        requests.post(url, json={"callback_query_id": callback_query_id}, timeout=5)
+    except Exception as e:
+        logging.error(f"Failed to answer callback query: {e}")
     
     if data == "check_subscription":
         # Get user
@@ -435,7 +443,7 @@ async def handle_callback_query(callback_query: Dict[str, Any]):
             
             await send_telegram_message(
                 chat_id,
-                "✅ *Подписка подтверждена!*\n\n"
+                "✅ Подписка подтверждена!\n\n"
                 "🎉 Теперь вы можете пользоваться всеми функциями бота!\n"
                 "💡 Отправьте любой запрос для поиска или используйте команду /help"
             )
@@ -453,7 +461,7 @@ async def handle_callback_query(callback_query: Dict[str, Any]):
             
             await send_telegram_message(
                 chat_id,
-                "❌ *Подписка не найдена*\n\n"
+                "❌ Подписка не найдена\n\n"
                 "📢 Подпишитесь на канал @uzri_sebya и нажмите 'Проверить подписку' снова",
                 reply_markup=keyboard
             )
